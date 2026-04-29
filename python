@@ -1,0 +1,33 @@
+import requests
+import json
+from datetime import datetime
+
+# 크롤링할 대상 URL 정보
+URLS = {
+    "LCK": "https://game.naver.com/esports/League_of_Legends/schedule/lck",
+    "EWC": "https://game.naver.com/esports/League_of_Legends/schedule/ewc_lol",
+    "KeSPA": "https://game.naver.com/esports/League_of_Legends/schedule/lol_kespa",
+    "Worlds": "https://game.naver.com/esports/League_of_Legends/schedule/world_championship",
+    "MSI": "https://game.naver.com/esports/League_of_Legends/schedule/world_championship"
+}
+
+def get_t1_matches():
+    all_t1_matches = []
+    
+    # 실제 구현 시에는 네이버 내부 API 엔드포인트를 호출해야 합니다.
+    # 아래는 구조적 예시이며, 실제 네이버 API 규격에 맞춰 데이터를 정제합니다.
+    # 예시 데이터를 생성합니다.
+    sample_data = [
+        {"league": "LCK", "date": "2024-06-15 17:00", "home": "T1", "away": "GEN", "status": "RESULT"},
+        {"league": "LCK", "date": "2024-06-18 20:00", "home": "DK", "away": "T1", "status": "RESULT"},
+        {"league": "LCK", "date": "2024-06-20 17:00", "home": "T1", "away": "KDF", "status": "RESULT"},
+        {"league": "LCK", "date": "2024-06-25 17:00", "home": "HLE", "away": "T1", "status": "RESULT"},
+        {"league": "LCK", "date": "2024-07-01 17:00", "home": "T1", "away": "KT", "status": "UPCOMING"},
+    ]
+    
+    # T1 필터링 및 저장
+    with open('matches.json', 'w', encoding='utf-8') as f:
+        json.dump(sample_data, f, ensure_ascii=False, indent=4)
+
+if __name__ == "__main__":
+    get_t1_matches()
