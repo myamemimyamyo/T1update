@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title id="page-title">T1 경기 일정 대시보드</title>
+    <style>
+        body { font-family: 'Pretendard', sans-serif; background: #121212; color: white; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .match-card { background: #1e1e1e; border-radius: 10px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #e74c3c; }
+        .match-card.past { opacity: 0.6; border-left-color: #555; }
+        .match-card.live { border-left-color: #2ecc71; animation: blink 1.5s infinite; }
+        .status-badge { padding: 5px 10px; border-radius: 5px; font-size: 12px; font-weight: bold; }
+        .status-past { background: #555; }
+        .status-live { background: #2ecc71; color: #000; }
+        .status-upcoming { background: #e74c3c; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>T1 Match Dashboard</h1>
+        <div id="match-list">로딩 중...</div>
+    </div>
+
+    <script>
+        async function loadMatches() {
+            try {
+                // 실제 환경에서는 'matches.json' 파일을 호출
+                const response = await fetch('matches.json');
+                const data = await response.json();
+                
+                const now = new Date();
+                const matchList = document.getElementById('match-list');
+                matchList.innerHTML = '';
+
+                // 데이터 정렬 (날짜순)
+                data.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                const pastMatches = data.filter(m => new Date(m.date) < now).slice(-3); // 지나간 경기 3개
+                const futureMatches = data.filter(m => new Date(m.date) >= now); // 예정된 경기 전체
+
+                const displayMatches = [...pastMatches, ...futureMatches];
+                let isAnyMatchLive = false;
+
+                displayMatches.forEach(match => {
+                    const matchDate = new Date(match.date);
+                    const diffMs = now - matchDate;
+                    const diffHrs = diffMs / (1000 * 60 * 60);
+                    
+                    let statusText = "경기예정";
+                    let statusClass = "status-upcoming";
+                    let cardClass = "";
+
+                    // 경기 종료 조건 (시작 후 3시간 지났거나 상태가 RESULT인 경우)
+                    if (match.status === "RESULT" || diffHrs > 3) {
+                        statusText = "경기종료";
+                        statusClass = "status-past";
+                        cardClass = "past";
+                    } 
+                    // 경기 중 조건 (현재 시간 기준 시작~3시간 이내)
+                    else if (diffHrs >= 0 && diffHrs <= 3) {
+                        statusText = "경기중";
+                        statusClass = "status-live";
+                        cardClass = "live";
+                        isAnyMatchLive = true;
+                    }
+
+                    const html = `
+                        <div class="match-card ${cardClass}">
+                            <div>
+                                <div style="font-size: 0.8em; color: #aaa;">${match.league}</div>
+                                <div style="font-size: 1.1em; font-weight: bold;">${match.home} vs ${match.away}</div>
+                                <div style="font-size: 0.9em; color: #ccc;">${match.date}</div>
+                            </div>
+                            <div class="status-badge ${statusClass}">${statusText}</div>
+                        </div>
+                    `;
+                    matchList.innerHTML += html;
+                });
+
+                // 탭 제목 업데이트
+                if (isAnyMatchLive) {
+                    document.title = "🔴 경기중 | T1 일정";
+                } else {
+                    document.title = "T1 경기 일정";
+                }
+
+            } catch (e) {
+                matchList.innerHTML = '데이터를 불러올 수 없습니다. (matches.json 파일 필요)';
+            }
+        }
+
+        loadMatches();
+        // 1시간마다 페이지 새로고침 (데이터 반영)
+        setInterval(loadMatches, 3600000);
+    </script>
+</body>
+</html>
