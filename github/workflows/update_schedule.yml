@@ -1,0 +1,28 @@
+name: Update T1 Schedule
+
+on:
+  schedule:
+    - cron: '0 0 * * 1' # 매주 월요일 0시 실행 (전체 업데이트)
+    - cron: '0 * * * *' # 매시간 실행 (경기 당일 상태 확인용)
+  workflow_dispatch: # 수동 실행 가능
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4
+      - name: Run crawler
+        run: python crawler.py
+      - name: Commit and push if changed
+        run: |
+          git config --global user.email "bot@github.com"
+          git config --global user.name "ScheduleBot"
+          git add matches.json
+          git commit -m "Update match data" || exit 0
+          git push
